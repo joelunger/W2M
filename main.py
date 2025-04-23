@@ -32,7 +32,7 @@ def save_settings(settings):
 settings = load_settings()
 
 root = Tk()
-root.title("WAV zu MP3 Konverter")
+root.title("FECG Converter")
 root.geometry("500x600")
 
 Label(root, text="Wähle WAV-Dateien aus:").pack(pady=5)
@@ -53,16 +53,14 @@ def choose_files():
 
 Button(root, text="Dateien auswählen", command=choose_files).pack(pady=5)
 
-def generate_album_name(content_type):
-    now = datetime.now()
-    date_str = now.strftime("%d.%m.%Y")
-    return f"{date_str} [{content_type}]"
+def generate_album_name():
+    return datetime.now().strftime("%d.%m.%Y")
 
-def generate_folder_name(content_type):
+def generate_folder_name(veranstaltung):
     now = datetime.now()
     weekday = WEEKDAY_SHORT_DE[now.weekday()]
     base = now.strftime("%y%m%d") + weekday
-    return f"{base} [{content_type}]" if content_type != "Sonstiges" else base
+    return f"{base} {veranstaltung}" if veranstaltung else base
 
 def open_settings_window():
     win = Toplevel(root)
@@ -73,16 +71,6 @@ def open_settings_window():
     artist_entry = Entry(win)
     artist_entry.pack()
     artist_entry.insert(0, settings.get("metadata", {}).get("artist", ""))
-
-    Label(win, text="Genre:").pack()
-    genre_entry = Entry(win)
-    genre_entry.pack()
-    genre_entry.insert(0, settings.get("metadata", {}).get("genre", ""))
-
-    Label(win, text="Kommentar:").pack()
-    comment_entry = Entry(win)
-    comment_entry.pack()
-    comment_entry.insert(0, settings.get("metadata", {}).get("comment", ""))
 
     Label(win, text="Cover Pfad:").pack()
     cover_entry = Entry(win)
@@ -102,8 +90,6 @@ def open_settings_window():
     def save_all():
         settings["metadata"] = {
             "artist": artist_entry.get(),
-            "genre": genre_entry.get(),
-            "comment": comment_entry.get(),
             "cover": cover_entry.get()
         }
         settings["export_paths"] = {k: v.get() for k, v in entries.items()}
@@ -115,14 +101,18 @@ def open_settings_window():
 
 Button(root, text="Einstellungen öffnen", command=open_settings_window).pack(pady=5)
 
-def confirm_metadata(content_type):
+def confirm_metadata_and_type():
     meta = settings.get("metadata", {}).copy()
-    meta["album"] = generate_album_name(content_type)
+    veranstaltung = meta.get("event", "").strip()
+    if meta.get("type") == "Hochzeit" and veranstaltung:
+        meta["album"] = generate_album_name() + " " + veranstaltung
+    else:
+        meta["album"] = generate_album_name()
     meta["year"] = str(datetime.now().year)
 
     win = Toplevel(root)
-    win.title("Metadaten bestätigen oder anpassen")
-    win.geometry("400x500")
+    win.title("Metadaten und Exportoptionen")
+    win.geometry("400x600")
 
     Label(win, text="Künstlername:").pack()
     artist_entry = Entry(win)
@@ -134,35 +124,34 @@ def confirm_metadata(content_type):
     album_entry.pack()
     album_entry.insert(0, meta.get("album", ""))
 
-    Label(win, text="Genre:").pack()
-    genre_entry = Entry(win)
-    genre_entry.pack()
-    genre_entry.insert(0, meta.get("genre", ""))
-
     Label(win, text="Jahr:").pack()
     year_entry = Entry(win)
     year_entry.pack()
     year_entry.insert(0, meta.get("year", ""))
-
-    Label(win, text="Kommentar:").pack()
-    comment_entry = Entry(win)
-    comment_entry.pack()
-    comment_entry.insert(0, meta.get("comment", ""))
 
     Label(win, text="Cover-Pfad:").pack()
     cover_entry = Entry(win)
     cover_entry.pack()
     cover_entry.insert(0, meta.get("cover", ""))
 
+    Label(win, text="Art des Inhalts:").pack(pady=10)
+    content_type = StringVar(value="Gottesdienst")
+    for option in ["Gottesdienst", "Hochzeit", "Weissagung", "Sonstiges"]:
+        Radiobutton(win, text=option, variable=content_type, value=option).pack(anchor=W)
+
+    Label(win, text="Veranstaltung (optional):").pack(pady=10)
+    event_entry = Entry(win)
+    event_entry.pack()
+
     confirmed_data = {}
 
     def confirm():
         confirmed_data["artist"] = artist_entry.get()
         confirmed_data["album"] = album_entry.get()
-        confirmed_data["genre"] = genre_entry.get()
         confirmed_data["year"] = year_entry.get()
-        confirmed_data["comment"] = comment_entry.get()
         confirmed_data["cover"] = cover_entry.get()
+        confirmed_data["type"] = content_type.get()
+        confirmed_data["event"] = event_entry.get().strip()
         win.destroy()
 
     Button(win, text="Bestätigen", command=confirm).pack(pady=10)
@@ -171,46 +160,23 @@ def confirm_metadata(content_type):
 
     return confirmed_data if confirmed_data else None
 
-def ask_content_type():
-    win = Toplevel(root)
-    win.title("Art des Inhaltes wählen")
-    win.geometry("300x250")
-
-    selected = StringVar(value="Gottesdienst")
-
-    Label(win, text="Wähle Art des Inhalts:").pack(pady=10)
-    for option in ["Gottesdienst", "Hochzeit", "Weissagung", "Sonstiges"]:
-        Radiobutton(win, text=option, variable=selected, value=option).pack(anchor=W)
-
-    confirmed = {}
-
-    def confirm():
-        confirmed["type"] = selected.get()
-        win.destroy()
-
-    Button(win, text="Bestätigen", command=confirm).pack(pady=10)
-    win.grab_set()
-    root.wait_window(win)
-
-    return confirmed.get("type")
-
 def convert():
     if not file_paths:
         messagebox.showerror("Fehler", "Keine Dateien ausgewählt.")
         return
 
-    content_type = ask_content_type()
-    if not content_type:
+    result = confirm_metadata_and_type()
+    if not result:
         return
 
-    meta = confirm_metadata(content_type)
-    if not meta:
-        return
+    meta = result
+    content_type = meta["type"]
+    veranstaltung = meta.get("event", "").strip()
 
-    if content_type in settings.get("export_paths", {}):
+    if content_type in settings.get("export_paths", {}) and content_type != "Sonstiges":
         base_dir = settings["export_paths"][content_type]
         os.makedirs(base_dir, exist_ok=True)
-        folder_name = generate_folder_name(content_type)
+        folder_name = generate_folder_name(veranstaltung)
         export_dir = os.path.join(base_dir, folder_name)
         os.makedirs(export_dir, exist_ok=True)
     else:
@@ -237,9 +203,7 @@ def convert():
                 audiofile["artist"] = meta["artist"]
                 audiofile["album"] = meta["album"]
                 audiofile["tracknumber"] = str(i + 1)
-                audiofile["genre"] = meta.get("genre", "")
                 audiofile["date"] = meta.get("year", "")
-                audiofile["comment"] = meta.get("comment", "")
                 audiofile.save()
 
                 audiofile = ID3(mp3_path)
