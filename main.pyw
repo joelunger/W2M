@@ -45,7 +45,7 @@ settings = load_settings()
 root = Tk()
 root.iconbitmap("icon.ico")
 root.title("fcco")
-root.geometry("500x700")
+root.geometry("420x540")
 
 
 Label(root, text="Wähle WAV-Dateien aus:").pack(pady=5)
@@ -83,7 +83,7 @@ def generate_folder_name(veranstaltung):
 def open_settings_window():
     win = Toplevel(root)
     win.title("Einstellungen")
-    win.geometry("500x400")
+    win.geometry("350x300")
 
     Label(win, text="Künstlername:").pack()
     artist_entry = Entry(win)
@@ -130,7 +130,7 @@ def confirm_metadata_and_type():
 
     win = Toplevel(root)
     win.title("Metadaten und Exportoptionen")
-    win.geometry("400x600")
+    win.geometry("250x400")
 
     Label(win, text="Künstlername:").pack()
     artist_entry = Entry(win)
