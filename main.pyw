@@ -44,7 +44,7 @@ settings = load_settings()
 
 root = Tk()
 root.iconbitmap("icon.ico")
-root.title("FECG Converter")
+root.title("fcco")
 root.geometry("500x700")
 
 
