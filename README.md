@@ -19,7 +19,7 @@ Ein einfaches, benutzerfreundliches Python-Tool mit grafischer Oberfläche (Tkin
 ## 🛠️ Setup
 
 # Automatisches Setup starten
-Windows-Nutzer können einfach ````setup.bat````` ausführen – es installiert:
+Windows-Nutzer können einfach ````setup.bat```` ausführen – es installiert:
 -	Python (falls nicht vorhanden)
 -	Virtuelle Umgebung
 -	Alle benötigten Python-Pakete (pydub, mutagen)
@@ -28,11 +28,11 @@ Windows-Nutzer können einfach ````setup.bat````` ausführen – es installiert:
 # Alternativ: Manuell installieren
 1. Stelle sicher, dass Python 3.11 oder neuer installiert ist.
 2. Virtuelle Umgebung erstellen und aktivieren:
-````python -m venv .venv
-.venv\Scripts\activate````
+````python -m venv .venv````
+````.venv\Scripts\activate````
 
 3. Abhängigkeiten installieren:
-`````pip install pydub mutagen````
+````pip install pydub mutagen````
 
 4. FFmpeg herunterladen und den bin-Ordner zur PATH-Umgebungsvariable hinzufügen.
 
