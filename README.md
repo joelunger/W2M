@@ -44,14 +44,14 @@ Windows-Nutzer können einfach ````setup.bat```` ausführen – es installiert:
 
 
 #📁 Projektstruktur
-
+````
 📦 wav-to-mp3-converter
 ├── setup.bat              # Batch-Datei zum Starten der Installation
 ├── setup.ps1              # PowerShell-Setupscript
 ├── settings.json          # Gespeicherte Einstellungen (automatisch erzeugt)
 ├── main.py                # Hauptprogramm mit GUI
 └── README.md              # Diese Datei
-
+````
 #ℹ️ Hinweise
 Nur .wav-Dateien werden akzeptiert.
 
