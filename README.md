@@ -26,7 +26,7 @@ Windows-Nutzer können einfach ````setup.bat```` ausführen – es installiert:
 -	FFmpeg (wird automatisch heruntergeladen & eingebunden)
 
 # Alternativ: Manuell installieren
-1. Stelle sicher, dass Python 3.11 oder neuer installiert ist.
+1. Stelle sicher, dass Python 3.11 installiert ist.
 2. Virtuelle Umgebung erstellen und aktivieren:
 ````python -m venv .venv````
 ````.venv\Scripts\activate````
